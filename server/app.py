@@ -14,6 +14,7 @@ def chat_gpt_helper(prompt):
     This function returns the response from OpenAI's Gpt3.5 turbo model using the completions API
     """
     try:
+        resp = ''
         openai.api_key = os.getenv('OPEN_API_KEY')
         for chunk in openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -26,7 +27,8 @@ def chat_gpt_helper(prompt):
             content = chunk["choices"][0].get("delta", {}).get("content")
             if content is not None:
                     print(content, end='')
-                    yield f'data: %s\n\n' % content
+                    resp += content
+                    yield f'data: %s\n\n' % resp
 
     except Exception as e:
         print(e)
