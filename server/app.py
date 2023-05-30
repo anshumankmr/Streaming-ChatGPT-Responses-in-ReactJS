@@ -1,6 +1,7 @@
 # Write a simple flask app with one route to return an response from OpenAI's Gpt3.5 turbo model using the completions API
 from flask  import Flask, Response, stream_with_context, request
 import os
+import openai
 import requests
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -13,28 +14,19 @@ def chat_gpt_helper(prompt):
     This function returns the response from OpenAI's Gpt3.5 turbo model using the completions API
     """
     try:
-        url = "https://api.openai.com/v1/chat/completions"
-        session = requests.Session()
-        payload = json.dumps({
-             "model" : "gpt-3.5-turbo",
-             "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-                ],
-            "temperature": 0,
-            "stream": True,
-            })
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer '+ os.getenv('OPEN_API_KEY') # type: ignore
-        }
-        with session.post(url, headers=headers, data=payload) as resp:
-            for line in resp.iter_lines():
-                if line:
-                    print(line)
-                    yield f'data: %s\n\n' % line.decode('utf-8')
+        openai.api_key = os.getenv('OPEN_API_KEY')
+        for chunk in openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{
+                "role": "user",
+                "content":prompt
+            }],
+            stream=True,
+        ):
+            content = chunk["choices"][0].get("delta", {}).get("content")
+            if content is not None:
+                    print(content, end='')
+                    yield f'data: %s\n\n' % content
 
     except Exception as e:
         print(e)
