@@ -17,7 +17,7 @@ def chat_gpt_helper(prompt):
         resp = ''
         openai.api_key = os.getenv('OPEN_API_KEY')
         for chunk in openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-16k",
             messages=[{
                 "role": "user",
                 "content":prompt
